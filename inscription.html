@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inscription patient - Clinique Maranatha</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f6f4;
+      color: #243247;
+      margin: 0;
+      padding: 25px 15px;
+    }
+    .container {
+      max-width: 700px;
+      margin: 20px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 3px 15px #0001;
+    }
+    h1, h2 { color: #17665b; }
+    h1 { text-align: center; }
+    label {
+      display: block;
+      margin-top: 16px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 7px;
+      border: 1px solid #ccd6d2;
+      border-radius: 6px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 14px;
+      background: #17665b;
+      color: white;
+      border: 0;
+      border-radius: 6px;
+      font-size: 16px;
+    }
+    .notice {
+      padding: 12px;
+      background: #fff5dc;
+      border-radius: 6px;
+      line-height: 1.5;
+    }
+    a { color: #17665b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Inscription du patient</h1>
+    <p><strong>Clinique Maranatha – Centre de Physiothérapie</strong></p>
+
+    <p class="notice">
+      Première version du formulaire. Les informations ne sont pas encore
+      enregistrées. N'y saisissez pas de renseignements médicaux réels
+      avant la mise en place du système sécurisé.
+    </p>
+
+    <h2>Informations personnelles</h2>
+
+    <form>
+      <label for="nom">Nom *</label>
+      <input id="nom" name="nom" required>
+
+      <label for="prenom">Prénom *</label>
+      <input id="prenom" name="prenom" required>
+
+      <label for="naissance">Date de naissance *</label>
+      <input id="naissance" name="naissance" type="date" required>
+
+      <label for="sexe">Sexe *</label>
+      <select id="sexe" name="sexe" required>
+        <option value="">Choisissez</option>
+        <option value="F">Féminin</option>
+        <option value="M">Masculin</option>
+        <option value="autre">Autre / préfère ne pas préciser</option>
+      </select>
+
+      <label for="telephone">Téléphone *</label>
+      <input id="telephone" name="telephone" type="tel" required>
+
+      <label for="email">Adresse e-mail</label>
+      <input id="email" name="email" type="email">
+
+      <label for="adresse">Adresse de résidence</label>
+      <textarea id="adresse" name="adresse" rows="3"></textarea>
+
+      <h2>Personne à contacter en cas de besoin</h2>
+
+      <label for="responsable">Nom de la personne responsable</label>
+      <input id="responsable" name="responsable">
+
+      <label for="telresponsable">Téléphone de cette personne</label>
+      <input id="telresponsable" name="telresponsable" type="tel">
+
+      <h2>Informations complémentaires</h2>
+
+      <label for="profession">Profession</label>
+      <input id="profession" name="profession">
+
+      <label for="medecin">Médecin référent (si applicable)</label>
+      <input id="medecin" name="medecin">
+
+      <button type="button" disabled>
+        Enregistrement bientôt disponible
+      </button>
+    </form>
+
+    <p><a href="index.html">← Retour à l'accueil</a></p>
+  </div>
+</body>
+</html>
