@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -5,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Inscription patient - Clinique Maranatha</title>
   <style>
+    * { box-sizing: border-box; }
+
     body {
       font-family: Arial, sans-serif;
       background: #f1f6f4;
@@ -12,6 +15,7 @@
       margin: 0;
       padding: 25px 15px;
     }
+
     .container {
       max-width: 700px;
       margin: 20px auto;
@@ -20,13 +24,16 @@
       border-radius: 12px;
       box-shadow: 0 3px 15px #0001;
     }
+
     h1, h2 { color: #17665b; }
     h1 { text-align: center; }
+
     label {
       display: block;
       margin-top: 16px;
       font-weight: bold;
     }
+
     input, select, textarea {
       width: 100%;
       padding: 12px;
@@ -34,8 +41,8 @@
       border: 1px solid #ccd6d2;
       border-radius: 6px;
       font-size: 15px;
-      box-sizing: border-box;
     }
+
     button {
       width: 100%;
       margin-top: 25px;
@@ -45,41 +52,56 @@
       border: 0;
       border-radius: 6px;
       font-size: 16px;
+      cursor: pointer;
     }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    #message {
+      margin-top: 18px;
+      font-weight: bold;
+      line-height: 1.5;
+    }
+
     .notice {
       padding: 12px;
       background: #fff5dc;
       border-radius: 6px;
       line-height: 1.5;
     }
+
     a { color: #17665b; }
   </style>
 </head>
+
 <body>
   <div class="container">
     <h1>Inscription du patient</h1>
     <p><strong>Clinique Maranatha – Centre de Physiothérapie</strong></p>
 
     <p class="notice">
-      Première version du formulaire. Les informations ne sont pas encore
-      enregistrées. N'y saisissez pas de renseignements médicaux réels
-      avant la mise en place du système sécurisé.
+      Ce formulaire est en cours de développement.
+      Pour le moment, utilisez uniquement de fausses informations
+      pendant les essais.
     </p>
 
     <h2>Informations personnelles</h2>
 
-    <form>
+    <form id="patientForm">
       <label for="nom">Nom *</label>
-      <input id="nom" name="nom" required>
+      <input id="nom" name="nom" type="text" required>
 
       <label for="prenom">Prénom *</label>
-      <input id="prenom" name="prenom" required>
+      <input id="prenom" name="prenom" type="text" required>
 
-      <label for="naissance">Date de naissance *</label>
-      <input id="naissance" name="naissance" type="date" required>
+      <label for="naissance">Date de naissance</label>
+      <input id="naissance" name="naissance" type="date">
 
-      <label for="sexe">Sexe *</label>
-      <select id="sexe" name="sexe" required>
+      <label for="sexe">Sexe</label>
+      <select id="sexe" name="sexe">
         <option value="">Choisissez</option>
         <option value="F">Féminin</option>
         <option value="M">Masculin</option>
@@ -95,10 +117,10 @@
       <label for="adresse">Adresse de résidence</label>
       <textarea id="adresse" name="adresse" rows="3"></textarea>
 
-      <h2>Personne à contacter en cas de besoin</h2>
+      <h2>Personne à contacter</h2>
 
       <label for="responsable">Nom de la personne responsable</label>
-      <input id="responsable" name="responsable">
+      <input id="responsable" name="responsable" type="text">
 
       <label for="telresponsable">Téléphone de cette personne</label>
       <input id="telresponsable" name="telresponsable" type="tel">
@@ -106,17 +128,61 @@
       <h2>Informations complémentaires</h2>
 
       <label for="profession">Profession</label>
-      <input id="profession" name="profession">
+      <input id="profession" name="profession" type="text">
 
-      <label for="medecin">Médecin référent (si applicable)</label>
-      <input id="medecin" name="medecin">
+      <label for="medecin">Médecin référent</label>
+      <input id="medecin" name="medecin" type="text">
 
-      <button type="button" disabled>
-        Enregistrement bientôt disponible
+      <button id="submitButton" type="submit">
+        Envoyer mon inscription
       </button>
+
+      <p id="message" role="status" aria-live="polite"></p>
     </form>
 
     <p><a href="index.html">← Retour à l'accueil</a></p>
   </div>
+
+  <script>
+    const form = document.getElementById("patientForm");
+    const message = document.getElementById("message");
+    const button = document.getElementById("submitButton");
+
+    form.addEventListener("submit", async function(event) {
+      event.preventDefault();
+
+      const data = Object.fromEntries(
+        new FormData(form).entries()
+      );
+
+      button.disabled = true;
+      message.textContent = "Enregistrement en cours...";
+
+      try {
+        const response = await fetch("/api/patients", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || "Erreur d'enregistrement.");
+        }
+
+        message.textContent = "Inscription enregistrée avec succès !";
+        form.reset();
+
+      } catch (error) {
+        message.textContent =
+          "Impossible d'enregistrer l'inscription. Veuillez réessayer.";
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
