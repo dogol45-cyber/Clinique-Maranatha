@@ -1,3 +1,4 @@
+
 export async function onRequestPost({ request, env }) {
   try {
     const data = await request.json();
@@ -13,15 +14,42 @@ export async function onRequestPost({ request, env }) {
       }, { status: 400 });
     }
 
+    const naissance = String(data.naissance || "").trim();
+    const sexe = String(data.sexe || "").trim();
+    const email = String(data.email || "").trim();
+    const adresse = String(data.adresse || "").trim();
+    const responsable = String(data.responsable || "").trim();
+    const telresponsable = String(data.telresponsable || "").trim();
+    const profession = String(data.profession || "").trim();
+    const medecin = String(data.medecin || "").trim();
+
     const result = await env.DB.prepare(`
-      INSERT INTO patients (nom, prenom, telephone, email, adresse)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO patients (
+        nom,
+        prenom,
+        date_naissance,
+        sexe,
+        telephone,
+        email,
+        adresse,
+        personne_responsable,
+        telephone_responsable,
+        profession,
+        medecin_referent
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
       nom,
       prenom,
+      naissance || null,
+      sexe || null,
       telephone,
-      String(data.email || "").trim(),
-      String(data.adresse || "").trim()
+      email || null,
+      adresse || null,
+      responsable || null,
+      telresponsable || null,
+      profession || null,
+      medecin || null
     ).run();
 
     return Response.json({
@@ -33,7 +61,7 @@ export async function onRequestPost({ request, env }) {
   } catch (error) {
     return Response.json({
       success: false,
-      message: "Impossible d'enregistrer le patient."
+      message: "Une erreur est survenue pendant l'enregistrement."
     }, { status: 500 });
   }
 }
