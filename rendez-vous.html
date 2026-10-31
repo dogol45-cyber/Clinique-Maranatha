@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Demande de rendez-vous - Clinique Maranatha</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f1f6f4;
+      margin: 0;
+      padding: 25px 15px;
+      color: #243247;
+    }
+    .container {
+      max-width: 650px;
+      margin: 25px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 3px 15px #0001;
+    }
+    h1 { color: #17665b; text-align: center; }
+    p { line-height: 1.6; }
+    label {
+      display: block;
+      margin-top: 17px;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 12px;
+      margin-top: 7px;
+      border: 1px solid #ccd6d2;
+      border-radius: 6px;
+      font-size: 15px;
+      box-sizing: border-box;
+    }
+    button {
+      width: 100%;
+      margin-top: 25px;
+      padding: 14px;
+      background: #17665b;
+      color: white;
+      border: 0;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .notice {
+      background: #fff5dc;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    a { color: #17665b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Demande de rendez-vous</h1>
+    <p><strong>Clinique Maranatha – Centre de Physiothérapie</strong></p>
+    <p>Remplissez les informations ci-dessous pour demander un rendez-vous.</p>
+
+    <p class="notice">
+      Ceci est une première version de la page. Le formulaire n'enregistre
+      pas encore les demandes. N'y saisissez pas de renseignements médicaux
+      confidentiels pour le moment.
+    </p>
+
+    <form>
+      <label for="nom">Nom complet *</label>
+      <input id="nom" name="nom" type="text" required>
+
+      <label for="telephone">Téléphone *</label>
+      <input id="telephone" name="telephone" type="tel" required>
+
+      <label for="email">Adresse e-mail</label>
+      <input id="email" name="email" type="email">
+
+      <label for="service">Service souhaité *</label>
+      <select id="service" name="service" required>
+        <option value="">Choisissez un service</option>
+        <option>Physiothérapie</option>
+        <option>Massothérapie</option>
+        <option>Rééducation fonctionnelle</option>
+        <option>Massage sportif</option>
+        <option>Rééducation après blessure ou chirurgie</option>
+        <option>Autre</option>
+      </select>
+
+      <label for="date">Date souhaitée *</label>
+      <input id="date" name="date" type="date" required>
+
+      <label for="heure">Heure souhaitée</label>
+      <input id="heure" name="heure" type="time">
+
+      <label for="motif">Motif général du rendez-vous</label>
+      <textarea id="motif" name="motif" rows="4"
+        placeholder="Indiquez brièvement votre demande, sans détails médicaux confidentiels."></textarea>
+
+      <button type="button" disabled>Envoi bientôt disponible</button>
+    </form>
+
+    <p><a href="index.html">← Retour à l'accueil</a></p>
+  </div>
+</body>
+</html>
