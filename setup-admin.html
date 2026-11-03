@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configuration administrateur – Maranatha</title>
+<style>
+body{font-family:Arial;background:#f1f4f7;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.box{background:white;padding:30px;border-radius:12px;width:90%;max-width:430px;box-shadow:0 5px 25px #0002}
+h2{color:#183b58;text-align:center}
+input,button{box-sizing:border-box;width:100%;padding:13px;margin-top:12px;border:1px solid #ccc;border-radius:7px}
+button{background:#183b58;color:white;border:0;cursor:pointer}
+#message{margin-top:15px;text-align:center}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>Créer le premier administrateur</h2>
+<form id="setupForm">
+<input name="nom" placeholder="Nom complet" required>
+<input name="email" type="email" placeholder="Adresse e-mail" required>
+<input name="password" type="password" minlength="12" placeholder="Mot de passe (12 caractères minimum)" required>
+<input name="setupKey" type="password" placeholder="Clé ADMIN_SETUP_KEY" required>
+<button type="submit">Créer le compte administrateur</button>
+</form>
+<p id="message"></p>
+</div>
+<script>
+document.getElementById("setupForm").addEventListener("submit",async function(e){
+  e.preventDefault();
+  const form=new FormData(this);
+  const message=document.getElementById("message");
+  message.textContent="Création en cours...";
+
+  try{
+    const response=await fetch("/api/setup-admin",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        nom:form.get("nom"),
+        email:form.get("email"),
+        password:form.get("password"),
+        setupKey:form.get("setupKey")
+      })
+    });
+    const result=await response.json();
+    message.textContent=result.message;
+
+    if(result.success){
+      this.reset();
+      message.textContent="Compte créé ! Retirez ADMIN_SETUP_KEY dans Cloudflare, puis connectez-vous.";
+    }
+  }catch{
+    message.textContent="Erreur pendant la création du compte.";
+  }
+});
+</script>
+</body>
+</html>
