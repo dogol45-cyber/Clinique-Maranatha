@@ -61,9 +61,11 @@ export async function onRequestPost({ request, env }) {
     }, { status: 201 });
 
   } catch (error) {
+    console.error("ERREUR CREATION ADMIN:", error);
+
     return Response.json({
       success: false,
-      message: "Impossible de créer le compte administrateur."
+      message: "Erreur serveur lors de la création du compte. Consultez les journaux Cloudflare."
     }, { status: 500 });
   }
 }
