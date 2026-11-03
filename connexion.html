@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connexion – Clinique Maranatha</title>
+<style>
+body{font-family:Arial,sans-serif;background:#f1f4f7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
+.box{background:white;padding:35px;border-radius:14px;width:90%;max-width:390px;box-shadow:0 5px 25px #0002}
+h2{text-align:center;color:#183b58}
+input,button{box-sizing:border-box;width:100%;padding:13px;margin-top:14px;border-radius:7px;font-size:15px}
+input{border:1px solid #ccc}
+button{border:0;background:#183b58;color:white;cursor:pointer}
+#message{text-align:center;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>CLINIQUE MARANATHA</h2>
+<p style="text-align:center">Connexion du personnel autorisé</p>
+<form id="loginForm">
+<input name="email" type="email" placeholder="Adresse e-mail" required>
+<input name="password" type="password" placeholder="Mot de passe" required>
+<button type="submit">Se connecter</button>
+</form>
+<p id="message"></p>
+</div>
+<script>
+document.getElementById("loginForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+  const message = document.getElementById("message");
+  message.textContent = "Connexion en cours...";
+  const form = new FormData(this);
+
+  try {
+    const response = await fetch("/api/login", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        email:form.get("email"),
+        password:form.get("password")
+      })
+    });
+    const result = await response.json();
+
+    if(result.success){
+      window.location.href="/administration.html";
+    } else {
+      message.textContent=result.message || "Connexion impossible.";
+    }
+  } catch {
+    message.textContent="Erreur de connexion au serveur.";
+  }
+});
+</script>
+</body>
+</html>
