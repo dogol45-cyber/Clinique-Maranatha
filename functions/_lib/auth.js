@@ -1,5 +1,5 @@
 const encoder = new TextEncoder();
-const ITERATIONS = 210000;
+const ITERATIONS = 100000;
 const SESSION_HOURS = 8;
 
 function toBase64Url(bytes) {
