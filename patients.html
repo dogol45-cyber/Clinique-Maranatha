@@ -1,0 +1,319 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dossiers patients - Clinique Maranatha</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6f9;color:#243447}
+header{background:#183b58;color:white;padding:18px 25px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header h2{margin:0;font-size:20px}
+button{border:0;border-radius:7px;padding:11px 15px;cursor:pointer;font-weight:bold}
+header button{background:white;color:#183b58}
+nav{background:white;padding:12px 22px;border-bottom:1px solid #e1e6eb}
+nav a{display:inline-block;color:#34495e;text-decoration:none;padding:10px 13px;border-radius:6px}
+nav a:hover,nav a.active{background:#eaf1f6;color:#183b58;font-weight:bold}
+main{max-width:1200px;margin:auto;padding:25px}
+h1{margin-top:0;font-size:25px}
+.panel{background:white;border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 2px 10px #00000008}
+.search{display:flex;gap:10px;flex-wrap:wrap}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccd5de;border-radius:6px;font-size:15px}
+.search input{flex:1;min-width:220px}
+.primary{background:#183b58;color:white}
+.secondary{background:#e8edf2;color:#263849}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:12px 9px;border-bottom:1px solid #edf0f3}
+th{color:#607386;font-size:13px}
+td{font-size:14px}
+.action{background:#eaf1f6;color:#183b58;padding:8px 11px}
+.table-wrap{overflow-x:auto}
+#message{margin:12px 0;color:#526579}
+#message.error{color:#a32626}
+#fiche{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field label{display:block;font-weight:bold;font-size:13px;margin-bottom:6px;color:#526579}
+.field.full{grid-column:1/-1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+@media(max-width:650px){
+main{padding:15px}
+.grid{grid-template-columns:1fr}
+.field.full{grid-column:auto}
+header{padding:15px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h2>CLINIQUE MARANATHA</h2>
+    <small>Centre de physiothérapie</small>
+  </div>
+  <button onclick="deconnexion()">Déconnexion</button>
+</header>
+
+<nav>
+  <a href="administration.html">Tableau de bord</a>
+  <a href="inscription.html">Inscription patient</a>
+  <a href="patients.html" class="active">Dossiers patients</a>
+  <a href="rendez-vous.html">Rendez-vous</a>
+</nav>
+
+<main>
+  <h1>Dossiers des patients</h1>
+  <p>Rechercher et consulter les patients enregistrés dans la clinique.</p>
+
+  <section class="panel">
+    <div class="search">
+      <input id="recherche" type="search" placeholder="Nom, prénom ou téléphone du patient">
+      <button class="primary" onclick="chargerPatients()">Rechercher</button>
+      <button class="secondary" onclick="effacerRecherche()">Tout afficher</button>
+    </div>
+    <p id="message">Chargement des patients...</p>
+    <div class="table-wrap" id="liste"></div>
+  </section>
+
+  <section class="panel" id="fiche">
+    <h2>Fiche du patient</h2>
+    <p id="numeroPatient"></p>
+
+    <form id="formPatient">
+      <input type="hidden" id="id">
+
+      <div class="grid">
+        <div class="field">
+          <label for="nom">Nom *</label>
+          <input id="nom" required>
+        </div>
+        <div class="field">
+          <label for="prenom">Prénom *</label>
+          <input id="prenom" required>
+        </div>
+        <div class="field">
+          <label for="telephone">Téléphone *</label>
+          <input id="telephone" required>
+        </div>
+        <div class="field">
+          <label for="naissance">Date de naissance</label>
+          <input id="naissance" type="date">
+        </div>
+        <div class="field">
+          <label for="sexe">Sexe</label>
+          <select id="sexe">
+            <option value="">Choisir</option>
+            <option value="Féminin">Féminin</option>
+            <option value="Masculin">Masculin</option>
+            <option value="Autre">Autre</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="email">Adresse e-mail</label>
+          <input id="email" type="email">
+        </div>
+        <div class="field full">
+          <label for="adresse">Adresse</label>
+          <textarea id="adresse" rows="2"></textarea>
+        </div>
+        <div class="field">
+          <label for="responsable">Personne responsable</label>
+          <input id="responsable">
+        </div>
+        <div class="field">
+          <label for="telresponsable">Téléphone du responsable</label>
+          <input id="telresponsable">
+        </div>
+        <div class="field">
+          <label for="profession">Profession</label>
+          <input id="profession">
+        </div>
+        <div class="field">
+          <label for="medecin">Médecin référent</label>
+          <input id="medecin">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Enregistrer les modifications</button>
+        <button class="secondary" type="button" onclick="fermerFiche()">Fermer la fiche</button>
+      </div>
+    </form>
+    <p id="messageFiche"></p>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+
+function afficherMessage(texte, erreur=false){
+  $("message").textContent=texte;
+  $("message").className=erreur?"error":"";
+}
+
+async function chargerPatients(){
+  afficherMessage("Recherche en cours...");
+  $("liste").replaceChildren();
+
+  try{
+    const terme=$("recherche").value.trim();
+    const url="/api/admin/patients"+(terme?"?recherche="+encodeURIComponent(terme):"");
+    const response=await fetch(url,{credentials:"same-origin"});
+
+    if(response.status===401){
+      location.href="/connexion.html";
+      return;
+    }
+
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.message || "Erreur.");
+
+    afficherListe(data.patients || []);
+    afficherMessage((data.patients || []).length+" patient(s) trouvé(s).");
+  }catch(error){
+    afficherMessage(error.message,true);
+  }
+}
+
+function afficherListe(patients){
+  const zone=$("liste");
+
+  if(patients.length===0){
+    zone.textContent="Aucun patient trouvé.";
+    return;
+  }
+
+  const table=document.createElement("table");
+  table.innerHTML="<thead><tr><th>Nom et prénom</th><th>Téléphone</th><th>Date d'inscription</th><th>Action</th></tr></thead>";
+  const tbody=document.createElement("tbody");
+
+  patients.forEach(patient=>{
+    const tr=document.createElement("tr");
+    const nom=document.createElement("td");
+    const tel=document.createElement("td");
+    const date=document.createElement("td");
+    const action=document.createElement("td");
+    const bouton=document.createElement("button");
+
+    nom.textContent=patient.prenom+" "+patient.nom;
+    tel.textContent=patient.telephone || "—";
+    date.textContent=patient.date_inscription || "—";
+    bouton.textContent="Consulter";
+    bouton.className="action";
+    bouton.addEventListener("click",()=>ouvrirFiche(patient.id));
+
+    action.appendChild(bouton);
+    tr.append(nom,tel,date,action);
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  zone.appendChild(table);
+}
+
+async function ouvrirFiche(id){
+  $("messageFiche").textContent="Chargement de la fiche...";
+  $("fiche").style.display="block";
+
+  try{
+    const response=await fetch("/api/admin/patients?id="+encodeURIComponent(id),{
+      credentials:"same-origin"
+    });
+
+    if(response.status===401){
+      location.href="/connexion.html";
+      return;
+    }
+
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.message || "Patient introuvable.");
+
+    const p=data.patient;
+    $("id").value=p.id;
+    $("numeroPatient").textContent="Dossier n° "+(p.numero_dossier || p.id);
+    $("nom").value=p.nom || "";
+    $("prenom").value=p.prenom || "";
+    $("telephone").value=p.telephone || "";
+    $("naissance").value=p.date_naissance || "";
+    $("sexe").value=p.sexe || "";
+    $("email").value=p.email || "";
+    $("adresse").value=p.adresse || "";
+    $("responsable").value=p.personne_responsable || "";
+    $("telresponsable").value=p.telephone_responsable || "";
+    $("profession").value=p.profession || "";
+    $("medecin").value=p.medecin_referent || "";
+    $("messageFiche").textContent="Vous pouvez modifier les informations ci-dessous.";
+    $("fiche").scrollIntoView({behavior:"smooth"});
+  }catch(error){
+    $("messageFiche").textContent=error.message;
+  }
+}
+
+$("formPatient").addEventListener("submit",async event=>{
+  event.preventDefault();
+  $("messageFiche").textContent="Enregistrement en cours...";
+
+  const donnees={
+    id:Number($("id").value),
+    nom:$("nom").value,
+    prenom:$("prenom").value,
+    telephone:$("telephone").value,
+    naissance:$("naissance").value,
+    sexe:$("sexe").value,
+    email:$("email").value,
+    adresse:$("adresse").value,
+    responsable:$("responsable").value,
+    telresponsable:$("telresponsable").value,
+    profession:$("profession").value,
+    medecin:$("medecin").value
+  };
+
+  try{
+    const response=await fetch("/api/admin/patients",{
+      method:"PUT",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify(donnees)
+    });
+
+    if(response.status===401){
+      location.href="/connexion.html";
+      return;
+    }
+
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.message || "Modification impossible.");
+
+    $("messageFiche").textContent="Modifications enregistrées avec succès.";
+    chargerPatients();
+  }catch(error){
+    $("messageFiche").textContent=error.message;
+  }
+});
+
+function fermerFiche(){
+  $("fiche").style.display="none";
+  $("formPatient").reset();
+  $("id").value="";
+}
+
+function effacerRecherche(){
+  $("recherche").value="";
+  chargerPatients();
+}
+
+$("recherche").addEventListener("keydown",event=>{
+  if(event.key==="Enter") chargerPatients();
+});
+
+async function deconnexion(){
+  try{
+    await fetch("/api/logout",{method:"POST",credentials:"same-origin"});
+  }finally{
+    location.href="/connexion.html";
+  }
+}
+
+chargerPatients();
+</script>
+</body>
+</html>
