@@ -5,10 +5,11 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
   const path = url.pathname;
 
-  const protectedPage =
+ const protectedPage =
     path === "/administration.html" ||
-    path === "/patients.html";
-
+    path === "/patients.html" ||
+    path === "/agenda.html";
+  
   const protectedApi = path.startsWith("/api/admin/");
 
   if (!protectedPage && !protectedApi) {
