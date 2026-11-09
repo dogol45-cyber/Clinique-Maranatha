@@ -1,10 +1,14 @@
+
 import { getSession } from "./_lib/auth.js";
 
 export async function onRequest(context) {
   const url = new URL(context.request.url);
   const path = url.pathname;
 
-  const protectedPage = path === "/administration.html";
+  const protectedPage =
+    path === "/administration.html" ||
+    path === "/patients.html";
+
   const protectedApi = path.startsWith("/api/admin/");
 
   if (!protectedPage && !protectedApi) {
@@ -27,10 +31,14 @@ export async function onRequest(context) {
     );
   }
 
-  if (user.role !== "administrateur" &&
-      user.role !== "reception" &&
-      user.role !== "physiotherapeute" &&
-      user.role !== "massotherapeute") {
+  const rolesAutorises = [
+    "administrateur",
+    "reception",
+    "physiotherapeute",
+    "massotherapeute"
+  ];
+
+  if (!rolesAutorises.includes(user.role)) {
     return new Response("Accès refusé.", { status: 403 });
   }
 
