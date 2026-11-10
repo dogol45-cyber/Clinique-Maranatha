@@ -5,13 +5,13 @@ export async function onRequest(context) {
   const url = new URL(context.request.url);
   const path = url.pathname;
 
- 
-const protectedPage =
+  const protectedPage =
     path === "/administration.html" ||
     path === "/patients.html" ||
     path === "/agenda.html" ||
     path === "/suivi.html" ||
-    path === "/paiements.html";
+    path === "/paiements.html" ||
+    path === "/personnel.html";
 
   const protectedApi = path.startsWith("/api/admin/");
 
@@ -23,10 +23,10 @@ const protectedPage =
 
   if (!user) {
     if (protectedApi) {
-      return Response.json({
-        success: false,
-        message: "Authentification requise."
-      }, { status: 401 });
+      return Response.json(
+        { success: false, message: "Authentification requise." },
+        { status: 401 }
+      );
     }
 
     return Response.redirect(
@@ -44,6 +44,18 @@ const protectedPage =
 
   if (!rolesAutorises.includes(user.role)) {
     return new Response("Accès refusé.", { status: 403 });
+  }
+
+  // Le personnel et son API sont réservés à l'administrateur.
+  if (
+    path === "/personnel.html" ||
+    path.startsWith("/api/admin/personnel")
+  ) {
+    if (user.role !== "administrateur") {
+      return new Response("Accès réservé à l'administrateur.", {
+        status: 403
+      });
+    }
   }
 
   return context.next();
