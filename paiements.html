@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paiements - Clinique Maranatha</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f3f6f9;color:#243447}
+header{background:#183b58;color:white;padding:18px 25px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+header h2{margin:0;font-size:20px}
+button{border:0;border-radius:7px;padding:10px 14px;cursor:pointer;font-weight:bold}
+header button{background:white;color:#183b58}
+nav{background:white;padding:12px 22px;border-bottom:1px solid #e1e6eb}
+nav a{display:inline-block;color:#34495e;text-decoration:none;padding:10px 13px;border-radius:6px}
+nav a:hover,nav a.active{background:#eaf1f6;color:#183b58;font-weight:bold}
+main{max-width:1200px;margin:auto;padding:25px}
+h1{margin-top:0;font-size:25px}
+.panel{background:white;border-radius:12px;padding:22px;margin-bottom:20px;box-shadow:0 2px 10px #00000008}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field label{display:block;font-weight:bold;font-size:13px;margin-bottom:6px;color:#526579}
+input,select{width:100%;padding:11px;border:1px solid #ccd5de;border-radius:6px;font-size:15px}
+.full{grid-column:1/-1}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.primary{background:#183b58;color:white}
+.secondary{background:#e8edf2;color:#263849}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:850px}
+th,td{text-align:left;padding:12px 9px;border-bottom:1px solid #edf0f3;font-size:14px}
+th{color:#607386;font-size:13px}
+.smallbtn{padding:7px 10px;background:#eaf1f6;color:#183b58}
+#message,#formMessage{color:#526579}
+.error{color:#a32626!important}
+.receipt{display:none}
+@media(max-width:650px){
+main{padding:15px}
+.grid{grid-template-columns:1fr}
+.full{grid-column:auto}
+header{padding:15px}
+}
+@media print{
+body{background:white}
+header,nav,main,.no-print{display:none!important}
+.receipt{display:block!important;padding:25px;font-family:Arial,sans-serif;color:#111}
+.receipt h1{text-align:center}
+.receipt p{margin:12px 0}
+.receipt hr{border:0;border-top:1px solid #777;margin:20px 0}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h2>CLINIQUE MARANATHA</h2>
+    <small>Centre de physiothérapie</small>
+  </div>
+  <button onclick="deconnexion()">Déconnexion</button>
+</header>
+
+<nav>
+  <a href="administration.html">Tableau de bord</a>
+  <a href="patients.html">Dossiers patients</a>
+  <a href="agenda.html">Agenda</a>
+  <a href="suivi.html">Suivi thérapeutique</a>
+  <a href="paiements.html" class="active">Paiements</a>
+</nav>
+
+<main class="no-print">
+  <h1>Gestion des paiements</h1>
+
+  <section class="panel">
+    <h2>Enregistrer un paiement</h2>
+    <form id="formPaiement">
+      <div class="grid">
+        <div class="field full">
+          <label for="patient">Patient *</label>
+          <select id="patient" required>
+            <option value="">Chargement des patients...</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="montant">Montant *</label>
+          <input id="montant" type="number" min="0.01" max="100000000" step="0.01" required placeholder="Ex. : 2500">
+        </div>
+
+        <div class="field">
+          <label for="devise">Devise *</label>
+          <select id="devise" required>
+            <option value="HTG">Gourdes (HTG)</option>
+            <option value="USD">Dollars américains (USD)</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="mode">Mode de paiement *</label>
+          <select id="mode" required>
+            <option value="">Choisir</option>
+            <option>Espèces</option>
+            <option>Virement</option>
+            <option>Chèque</option>
+            <option>Autre</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="statut">Statut *</label>
+          <select id="statut" required>
+            <option value="paye">Payé</option>
+            <option value="en_attente">En attente</option>
+          </select>
+        </div>
+
+        <div class="field full">
+          <label for="reference">Référence de transaction (facultatif)</label>
+          <input id="reference" maxlength="150" placeholder="Numéro de transaction ou référence">
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="primary" type="submit">Enregistrer le paiement</button>
+      </div>
+      <p id="formMessage"></p>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Historique des paiements</h2>
+    <div class="grid">
+      <div class="field full">
+        <label for="recherche">Rechercher un patient</label>
+        <input id="recherche" type="search" placeholder="Nom, prénom ou téléphone">
+      </div>
+    </div>
+    <div class="actions">
+      <button class="primary" onclick="chargerPaiements()">Rechercher</button>
+      <button class="secondary" onclick="toutAfficher()">Tout afficher</button>
+    </div>
+    <p id="message">Chargement des paiements...</p>
+    <div class="table-wrap" id="liste"></div>
+  </section>
+</main>
+
+<section class="receipt" id="recu">
+  <h1>CLINIQUE MARANATHA</h1>
+  <p style="text-align:center">CENTRE DE PHYSIOTHÉRAPIE</p>
+  <hr>
+  <h2 style="text-align:center">REÇU DE PAIEMENT</h2>
+  <p><strong>Numéro du reçu :</strong> <span id="rNumero"></span></p>
+  <p><strong>Date :</strong> <span id="rDate"></span></p>
+  <p><strong>Patient :</strong> <span id="rPatient"></span></p>
+  <p><strong>Téléphone :</strong> <span id="rTelephone"></span></p>
+  <p><strong>Montant :</strong> <span id="rMontant"></span></p>
+  <p><strong>Mode de paiement :</strong> <span id="rMode"></span></p>
+  <p><strong>Référence :</strong> <span id="rReference"></span></p>
+  <p><strong>Statut :</strong> <span id="rStatut"></span></p>
+  <hr>
+  <p style="text-align:center;margin-top:45px">Merci de votre confiance.</p>
+  <p style="text-align:center">« La main qui guérit »</p>
+  <p style="margin-top:55px">Signature : __________________________</p>
+</section>
+
+<script>
+const $=id=>document.getElementById(id);
+let paiementsActuels=[];
+
+async function chargerPatients(){
+  try{
+    const response=await fetch("/api/admin/paiements?patients=1",{
+      credentials:"same-origin"
+    });
+
+    if(response.status===401){
+      location.href="/connexion.html";
+      return;
+    }
+
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.message || "Erreur.");
+
+    const select=$("patient");
+    select.replaceChildren(new Option("Choisir un patient",""));
+
+    data.patients.forEach(p=>{
+      select.add(new Option(
+        p.prenom+" "+p.nom+" — "+(p.telephone || "Sans téléphone"),
+        p.id
+      ));
+    });
+
+    if(data.patients.length===0){
+      select.replaceChildren(new Option("Aucun patient inscrit",""));
+    }
+  }catch(error){
+    $("formMessage").textContent=error.message;
+  }
+}
+
+async function chargerPaiements(){
+  $("message").textContent="Chargement...";
+  $("liste").replaceChildren();
+
+  try{
+    const terme=$("recherche").value.trim();
+    const url="/api/admin/paiements"+(terme?"?recherche="+encodeURIComponent(terme):"");
+    const response=await fetch(url,{credentials:"same-origin"});
+
+    if(response.status===401){
+      location.href="/connexion.html";
+      return;
+    }
+
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.message || "Erreur.");
+
+    paiementsActuels=data.paiements || [];
+    afficherPaiements(paiementsActuels);
+    $("message").textContent=paiementsActuels.length+" paiement(s) trouvé(s).";
+    $("message").className="";
+  }catch(error){
+    $("message").textContent=error.message;
+    $("message").className="error";
+  }
+}
+
+function afficherPaiements(liste){
+  const zone=$("liste");
+
+  if(liste.length===0){
+    zone.textContent="Aucun paiement enregistré.";
+    return;
+  }
+
+  const table=document.createElement("table");
+  table.innerHTML="<thead><tr><th>Patient</th><th>Montant</th><th>Mode</th><th>Date</th><th>Statut</th><th>Reçu</th></tr></thead>";
+
+  const tbody=document.createElement("tbody");
+
+  liste.forEach(p=>{
+    const tr=document.createElement("tr");
+    const valeurs=[
+      p.prenom+" "+p.nom,
+      Number(p.montant).toLocaleString("fr-FR")+" "+p.devise,
+      p.mode_paiement || "—",
+      p.date_paiement || "—",
+      p.statut==="paye"?"Payé":"En attente"
+    ];
+
+    valeurs.forEach(valeur=>{
+      const td=document.createElement("td");
+      td.textContent=valeur;
+      tr.appendChild(td);
+    });
+
+    const action=document.createElement("td");
+    if(p.statut==="paye"){
+      const bouton=document.createElement("button");
+      bouton.textContent="Imprimer";
+      bouton.className="smallbtn";
+      bouton.addEventListener("click",()=>imprimerRecu(p.id));
+      action.appendChild(bouton);
+    }else{
+      action.textContent="Disponible après paiement";
+    }
+
+    tr.appendChild(action);
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+  zone.appendChild(table);
+}
+
+$("formPaiement").addEventListener("submit",async event=>{
+  event.preventDefault();
+  $("formMessage").textContent="Enregistrement en cours...";
+
+  const donnees={
+    patient_id:Number($("patient").value),
+    montant:$("montant").value,
+    devise:$("devise").value,
+    mode_paiement:$("mode").value,
+    statut:$("statut").value,
+    reference_transaction:$("reference").value
+  };
+
+  try{
+    const response=await fetch("/api/admin/paiements",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify(donnees)
+    });
+
+    if(response.status===401){
+      location.href="/connexion.html";
+      return;
+    }
+
+    const data=await response.json();
+    if(!response.ok || !data.success) throw new Error(data.message || "Erreur.");
+
+    $("formPaiement").reset();
+    $("formMessage").textContent="Paiement enregistré. Numéro : "+data.id;
+    chargerPaiements();
+  }catch(error){
+    $("formMessage").textContent=error.message;
+    $("formMessage").className="error";
+  }
+});
+
+function imprimerRecu(id){
+  const p=paiementsActuels.find(item=>Number(item.id)===Number(id));
+  if(!p || p.statut!=="paye") return;
+
+  $("rNumero").textContent="CM-"+String(p.id).padStart(5,"0");
+  $("rDate").textContent=p.date_paiement || "—";
+  $("rPatient").textContent=p.prenom+" "+p.nom;
+  $("rTelephone").textContent=p.telephone || "—";
+  $("rMontant").textContent=Number(p.montant).toLocaleString("fr-FR")+" "+p.devise;
+  $("rMode").textContent=p.mode_paiement || "—";
+  $("rReference").textContent=p.reference_transaction || "—";
+  $("rStatut").textContent="Payé";
+
+  window.print();
+}
+
+function toutAfficher(){
+  $("recherche").value="";
+  chargerPaiements();
+}
+
+$("recherche").addEventListener("keydown",event=>{
+  if(event.key==="Enter") chargerPaiements();
+});
+
+async function deconnexion(){
+  try{
+    await fetch("/api/logout",{method:"POST",credentials:"same-origin"});
+  }finally{
+    location.href="/connexion.html";
+  }
+}
+
+chargerPatients();
+chargerPaiements();
+</script>
+</body>
+</html>
