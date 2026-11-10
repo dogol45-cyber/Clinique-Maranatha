@@ -1,0 +1,334 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestion du personnel - Clinique Maranatha</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f6fa;
+      color: #243247;
+    }
+    header {
+      background: #123b56;
+      color: white;
+      padding: 22px 5%;
+    }
+    header h1 { margin: 0 0 7px; font-size: 24px; }
+    header p { margin: 0; opacity: .9; }
+    main {
+      width: 92%;
+      max-width: 1100px;
+      margin: 25px auto;
+    }
+    .navigation { margin-bottom: 18px; }
+    a { color: #087c9e; text-decoration: none; font-weight: bold; }
+    .panel {
+      background: white;
+      padding: 22px;
+      border-radius: 12px;
+      margin-bottom: 22px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.06);
+    }
+    h2 { margin-top: 0; color: #123b56; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 15px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ccd5df;
+      border-radius: 7px;
+      font-size: 15px;
+      background: white;
+    }
+    button {
+      border: 0;
+      border-radius: 7px;
+      padding: 11px 16px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .primary { background: #087c9e; color: white; margin-top: 18px; }
+    .secondary { background: #e8eef3; color: #123b56; }
+    .danger { background: #fce8e8; color: #a32121; }
+    .success { background: #e5f6ec; color: #176b38; }
+    .message { margin-top: 14px; font-weight: bold; }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e5eaf0;
+    }
+    th { background: #f0f4f7; color: #123b56; }
+    .status {
+      display: inline-block;
+      padding: 5px 9px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .active { background: #e1f5e8; color: #176b38; }
+    .inactive { background: #fce8e8; color: #a32121; }
+    .small-note { color: #64748b; font-size: 13px; line-height: 1.5; }
+    @media (max-width: 650px) {
+      .grid { grid-template-columns: 1fr; }
+      .panel { padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CLINIQUE MARANATHA</h1>
+    <p>Gestion du personnel et des comptes utilisateurs</p>
+  </header>
+
+  <main>
+    <div class="navigation">
+      <a href="administration.html">← Retour au tableau de bord</a>
+    </div>
+
+    <section class="panel">
+      <h2>Créer un compte employé</h2>
+      <p class="small-note">
+        Chaque employé doit avoir son propre compte et son propre mot de passe.
+        Utilisez un mot de passe temporaire sécurisé et transmettez-le à l'employé
+        par un canal privé.
+      </p>
+
+      <form id="formPersonnel">
+        <div class="grid">
+          <div>
+            <label for="nom">Nom complet *</label>
+            <input id="nom" name="nom" required maxlength="100"
+                   placeholder="Nom et prénom">
+          </div>
+
+          <div>
+            <label for="email">Adresse e-mail *</label>
+            <input id="email" name="email" type="email" required maxlength="150"
+                   placeholder="employe@email.com">
+          </div>
+
+          <div>
+            <label for="mot_de_passe">Mot de passe temporaire *</label>
+            <input id="mot_de_passe" name="mot_de_passe" type="password"
+                   required minlength="10" maxlength="128"
+                   autocomplete="new-password"
+                   placeholder="Minimum 10 caractères">
+          </div>
+
+          <div>
+            <label for="role">Fonction / rôle *</label>
+            <select id="role" name="role" required>
+              <option value="">Choisissez un rôle</option>
+              <option value="administrateur">Administrateur</option>
+              <option value="reception">Réception</option>
+              <option value="physiotherapeute">Physiothérapeute</option>
+              <option value="massotherapeute">Massothérapeute</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="primary" type="submit">Créer le compte</button>
+        <div id="messageForm" class="message" role="status"></div>
+      </form>
+    </section>
+
+    <section class="panel">
+      <h2>Liste du personnel</h2>
+      <button class="secondary" type="button" id="actualiser">
+        Actualiser la liste
+      </button>
+      <div id="messageListe" class="message" role="status"></div>
+
+      <div class="table-wrap" style="margin-top:15px">
+        <table>
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>E-mail</th>
+              <th>Rôle</th>
+              <th>État du compte</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="listePersonnel">
+            <tr><td colspan="5">Chargement...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById("formPersonnel");
+    const messageForm = document.getElementById("messageForm");
+    const messageListe = document.getElementById("messageListe");
+    const liste = document.getElementById("listePersonnel");
+
+    const nomsRoles = {
+      administrateur: "Administrateur",
+      reception: "Réception",
+      physiotherapeute: "Physiothérapeute",
+      massotherapeute: "Massothérapeute"
+    };
+
+    async function chargerPersonnel() {
+      liste.replaceChildren();
+      const ligneChargement = document.createElement("tr");
+      const celluleChargement = document.createElement("td");
+      celluleChargement.colSpan = 5;
+      celluleChargement.textContent = "Chargement...";
+      ligneChargement.appendChild(celluleChargement);
+      liste.appendChild(ligneChargement);
+      messageListe.textContent = "";
+
+      try {
+        const reponse = await fetch("/api/admin/personnel");
+        const resultat = await reponse.json();
+
+        if (!reponse.ok || !resultat.success) {
+          throw new Error(resultat.message || "Impossible de charger la liste.");
+        }
+
+        liste.replaceChildren();
+
+        if (!resultat.utilisateurs.length) {
+          const ligne = document.createElement("tr");
+          const cellule = document.createElement("td");
+          cellule.colSpan = 5;
+          cellule.textContent = "Aucun compte du personnel.";
+          ligne.appendChild(cellule);
+          liste.appendChild(ligne);
+          return;
+        }
+
+        resultat.utilisateurs.forEach(personne => {
+          const ligne = document.createElement("tr");
+
+          function ajouterCellule(texte) {
+            const cellule = document.createElement("td");
+            cellule.textContent = texte;
+            ligne.appendChild(cellule);
+            return cellule;
+          }
+
+          ajouterCellule(personne.nom);
+          ajouterCellule(personne.email);
+          ajouterCellule(nomsRoles[personne.role] || personne.role);
+
+          const celluleEtat = ajouterCellule("");
+          const etiquette = document.createElement("span");
+          etiquette.className = "status " +
+            (personne.actif === 1 ? "active" : "inactive");
+          etiquette.textContent = personne.actif === 1 ? "Actif" : "Désactivé";
+          celluleEtat.appendChild(etiquette);
+
+          const celluleAction = ajouterCellule("");
+          const bouton = document.createElement("button");
+          bouton.className = personne.actif === 1 ? "danger" : "success";
+          bouton.textContent = personne.actif === 1 ? "Désactiver" : "Activer";
+          bouton.addEventListener("click", () => modifierEtat(
+            personne.id,
+            personne.actif !== 1
+          ));
+          celluleAction.appendChild(bouton);
+
+          liste.appendChild(ligne);
+        });
+
+      } catch (error) {
+        liste.replaceChildren();
+        const ligne = document.createElement("tr");
+        const cellule = document.createElement("td");
+        cellule.colSpan = 5;
+        cellule.textContent = error.message;
+        ligne.appendChild(cellule);
+        liste.appendChild(ligne);
+      }
+    }
+
+    async function modifierEtat(id, nouvelEtat) {
+      const action = nouvelEtat ? "activer" : "désactiver";
+
+      if (!confirm(`Voulez-vous vraiment ${action} ce compte ?`)) return;
+
+      messageListe.textContent = "Modification en cours...";
+
+      try {
+        const reponse = await fetch("/api/admin/personnel", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, actif: nouvelEtat })
+        });
+
+        const resultat = await reponse.json();
+
+        if (!reponse.ok || !resultat.success) {
+          throw new Error(resultat.message || "La modification a échoué.");
+        }
+
+        messageListe.textContent = resultat.message;
+        await chargerPersonnel();
+
+      } catch (error) {
+        messageListe.textContent = error.message;
+      }
+    }
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      messageForm.textContent = "Création du compte en cours...";
+
+      const donnees = {
+        nom: document.getElementById("nom").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        mot_de_passe: document.getElementById("mot_de_passe").value,
+        role: document.getElementById("role").value
+      };
+
+      try {
+        const reponse = await fetch("/api/admin/personnel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(donnees)
+        });
+
+        const resultat = await reponse.json();
+
+        if (!reponse.ok || !resultat.success) {
+          throw new Error(resultat.message || "La création du compte a échoué.");
+        }
+
+        messageForm.textContent = resultat.message;
+        form.reset();
+        await chargerPersonnel();
+
+      } catch (error) {
+        messageForm.textContent = error.message;
+      }
+    });
+
+    document.getElementById("actualiser").addEventListener(
+      "click",
+      chargerPersonnel
+    );
+
+    chargerPersonnel();
+  </script>
+</body>
+</html>
